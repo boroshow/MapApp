@@ -71,6 +71,7 @@ class MainActivity : AppCompatActivity(), GeoObjectTapListener, InputListener {
                     0.0f),
                 Animation(Animation.Type.SMOOTH, 1F),
                 null)
+            binding.etNamePlace.text = null
         }
     }
 
@@ -219,16 +220,19 @@ class MainActivity : AppCompatActivity(), GeoObjectTapListener, InputListener {
         MapKitFactory.getInstance().onStart()
     }
 
-    //Object tap (it's not work for street's)
+    //Object tap (it's not working for street's)
     override fun onObjectTap(geoObjectTapEvent: GeoObjectTapEvent): Boolean {
         when {
             geoObjectTapEvent.geoObject.name?.isNotBlank() == true -> {
+                binding.etNamePlace.text = null
                 binding.etNamePlace.hint = geoObjectTapEvent.geoObject.name
             }
             geoObjectTapEvent.geoObject.descriptionText?.isNotBlank() == true -> {
+                binding.etNamePlace.text = null
                 binding.etNamePlace.hint = geoObjectTapEvent.geoObject.descriptionText
             }
             else -> {
+                binding.etNamePlace.text = null
                 binding.etNamePlace.hint = "Введите название города/страны/места"
             }
 
@@ -241,6 +245,7 @@ class MainActivity : AppCompatActivity(), GeoObjectTapListener, InputListener {
         searchManager = SearchFactory.getInstance().createSearchManager(
             SearchManagerType.ONLINE
         )
+        //Your point
         val point = Geometry.fromPoint(Point(42.87, 74.59))
         searchSession = searchManager!!.submit(query, point, SearchOptions(),
             object : Session.SearchListener {
@@ -251,7 +256,6 @@ class MainActivity : AppCompatActivity(), GeoObjectTapListener, InputListener {
                 @SuppressLint("NotifyDataSetChanged")
                 override fun onSearchResponse(response: Response) {
                     Log.e("TAG", query)
-
                     val city = response.collection.children.firstOrNull()?.obj
                         ?.metadataContainer
                         ?.getItem(ToponymObjectMetadata::class.java)
@@ -276,8 +280,19 @@ class MainActivity : AppCompatActivity(), GeoObjectTapListener, InputListener {
                         ?.firstOrNull { it.kinds.contains(Address.Component.Kind.DISTRICT) }
                         ?.name
 
+                    val house = response.collection.children.firstOrNull()?.obj
+                        ?.metadataContainer
+                        ?.getItem(ToponymObjectMetadata::class.java)
+                        ?.address
+                        ?.components
+                        ?.firstOrNull { it.kinds.contains(Address.Component.Kind.HOUSE) }
+                        ?.name
+
                     if (street != null) {
                         array.add("$city $street")
+                    }
+                    if (house != null) {
+                        array.add("$street $house")
                     }
                     if (district != null) {
                         array.add(district)
@@ -290,27 +305,70 @@ class MainActivity : AppCompatActivity(), GeoObjectTapListener, InputListener {
                         if (resultLocation != null) {
                             adapterClick(resultLocation)
                         }
-
                     }
-
                 }
             })
     }
 
-    //On map tap (it's work for street's)
+    //On map tap (it's working for street's)
     override fun onMapTap(map: Map, point: Point) {
         pointToName(point)
     }
 
-    //Function that convert point to name
-    private fun pointToName(point: Point?) {
-        if (point != null) {
-        } else {
-            Toast.makeText(this, "Point is null", Toast.LENGTH_SHORT).show()
-        }
+    override fun onMapLongTap(map: Map, point: Point) {
     }
 
-    override fun onMapLongTap(p0: Map, p1: Point) {
+    //Function that convert point to name
+    private fun pointToName(point: Point?) {
+        searchManager = SearchFactory.getInstance().createSearchManager(
+            SearchManagerType.ONLINE
+        )
+        searchSession =
+            point?.let { it ->
+                searchManager!!.submit(
+                    it,
+                    20,
+                    SearchOptions(),
+                    object : Session.SearchListener {
+                        override fun onSearchError(error: Error) {
+                            Toast.makeText(this@MainActivity, "Try again", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+
+                        override fun onSearchResponse(response: Response) {
+                            val city = response.collection.children.firstOrNull()?.obj
+                                ?.metadataContainer
+                                ?.getItem(ToponymObjectMetadata::class.java)
+                                ?.address
+                                ?.components
+                                ?.firstOrNull { it.kinds.contains(Address.Component.Kind.LOCALITY) }
+                                ?.name
+
+                            val street = response.collection.children.firstOrNull()?.obj
+                                ?.metadataContainer
+                                ?.getItem(ToponymObjectMetadata::class.java)
+                                ?.address
+                                ?.components
+                                ?.firstOrNull { it.kinds.contains(Address.Component.Kind.STREET) }
+                                ?.name
+
+                            val district = response.collection.children.firstOrNull()?.obj
+                                ?.metadataContainer
+                                ?.getItem(ToponymObjectMetadata::class.java)
+                                ?.address
+                                ?.components
+                                ?.firstOrNull { it.kinds.contains(Address.Component.Kind.DISTRICT) }
+                                ?.name
+
+                            if (street != null) {
+                                binding.etNamePlace.hint = "$city $street"
+                            }
+                            if (district != null) {
+                                binding.etNamePlace.hint = district
+                            }
+                        }
+                    })
+            }
     }
 
 }
