@@ -58,6 +58,7 @@ class MainActivity : AppCompatActivity(), GeoObjectTapListener, InputListener {
         etPlace()
     }
 
+    //Adapter click
     private fun adapterClick(point: Point) {
         adapterPlace.onClick = {
             binding.rvNames.isGone = true
@@ -73,18 +74,21 @@ class MainActivity : AppCompatActivity(), GeoObjectTapListener, InputListener {
         }
     }
 
-    private fun hideKeyboard(){
+    //Hide keyboard
+    private fun hideKeyboard() {
         val v = this.currentFocus
         val imm = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         assert(v != null)
         imm.hideSoftInputFromWindow(v!!.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
     }
 
+    //Add map click
     private fun mapClick() {
         binding.mapview.map.addTapListener(this)
         binding.mapview.map.addInputListener(this)
     }
 
+    //Init recyclerview
     private fun rvInit() {
         binding.rvNames.apply {
             layoutManager = LinearLayoutManager(context)
@@ -92,6 +96,7 @@ class MainActivity : AppCompatActivity(), GeoObjectTapListener, InputListener {
         }
     }
 
+    //Edit text with textWatcher
     private fun etPlace() {
         binding.etNamePlace.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
@@ -113,17 +118,20 @@ class MainActivity : AppCompatActivity(), GeoObjectTapListener, InputListener {
         })
     }
 
+    //Btn click
     private fun btnMe() {
         binding.fab.setOnClickListener {
             getCurrentLocation()
         }
     }
 
+    //Map initialize
     private fun mapInit() {
         MapKitFactory.setApiKey(BuildConfig.MAP_API_KEY)
         MapKitFactory.initialize(this)
     }
 
+    //Get location and check permission for locality
     private fun getCurrentLocation() {
         if (checkPermissions()) {
             if (isLocationEnabled()) {
@@ -197,6 +205,7 @@ class MainActivity : AppCompatActivity(), GeoObjectTapListener, InputListener {
         }
     }
 
+    //Work with lifecycle
     override fun onStop() {
         super.onStop()
         mapInit()
@@ -210,6 +219,7 @@ class MainActivity : AppCompatActivity(), GeoObjectTapListener, InputListener {
         MapKitFactory.getInstance().onStart()
     }
 
+    //Object tap (it's not work for street's)
     override fun onObjectTap(geoObjectTapEvent: GeoObjectTapEvent): Boolean {
         when {
             geoObjectTapEvent.geoObject.name?.isNotBlank() == true -> {
@@ -226,6 +236,7 @@ class MainActivity : AppCompatActivity(), GeoObjectTapListener, InputListener {
         return true
     }
 
+    //Search request with name of place
     private fun requestSearch(query: String) {
         searchManager = SearchFactory.getInstance().createSearchManager(
             SearchManagerType.ONLINE
@@ -286,10 +297,12 @@ class MainActivity : AppCompatActivity(), GeoObjectTapListener, InputListener {
             })
     }
 
+    //On map tap (it's work for street's)
     override fun onMapTap(map: Map, point: Point) {
         pointToName(point)
     }
 
+    //Function that convert point to name
     private fun pointToName(point: Point?) {
         if (point != null) {
         } else {
