@@ -8,7 +8,7 @@ import com.example.mapapp.databinding.ItemRvBinding
 class AdapterPlace(private val list: ArrayList<String>) :
     RecyclerView.Adapter<AdapterPlace.PlaceViewHolder>() {
 
-     var onClick: ((String) -> Unit)? = null
+    var onClick: ((String) -> Unit)? = null
 
     inner class PlaceViewHolder(private val binding: ItemRvBinding) :
         RecyclerView.ViewHolder(binding.root) {
