@@ -15,7 +15,6 @@ import android.text.TextWatcher
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.view.isGone
-import androidx.recyclerview.widget.LinearLayoutManager
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.example.mapapp.databinding.ActivityMainBinding
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -26,6 +25,7 @@ import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.map.CameraPosition
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.yandex.mapkit.geometry.Geometry
 import com.yandex.mapkit.layers.GeoObjectTapEvent
 import com.yandex.mapkit.layers.GeoObjectTapListener
@@ -118,9 +118,6 @@ class MainActivity : AppCompatActivity(), GeoObjectTapListener, InputListener {
                     requestSearch(s.toString())
                     binding.rvNames.isGone = false
                 }
-                searchManager = SearchFactory.getInstance().createSearchManager(
-                    SearchManagerType.ONLINE
-                )
             }
         })
     }
@@ -258,46 +255,15 @@ class MainActivity : AppCompatActivity(), GeoObjectTapListener, InputListener {
 
                 @SuppressLint("NotifyDataSetChanged")
                 override fun onSearchResponse(response: Response) {
-                    val city = response.collection.children.firstOrNull()?.obj
+                    array.clear()
+                    val all = response.collection.children.firstOrNull()?.obj
                         ?.metadataContainer
                         ?.getItem(ToponymObjectMetadata::class.java)
                         ?.address
-                        ?.components
-                        ?.firstOrNull { it.kinds.contains(Address.Component.Kind.LOCALITY) }
-                        ?.name
+                        ?.formattedAddress
 
-                    val street = response.collection.children.firstOrNull()?.obj
-                        ?.metadataContainer
-                        ?.getItem(ToponymObjectMetadata::class.java)
-                        ?.address
-                        ?.components
-                        ?.firstOrNull { it.kinds.contains(Address.Component.Kind.STREET) }
-                        ?.name
-
-                    val district = response.collection.children.firstOrNull()?.obj
-                        ?.metadataContainer
-                        ?.getItem(ToponymObjectMetadata::class.java)
-                        ?.address
-                        ?.components
-                        ?.firstOrNull { it.kinds.contains(Address.Component.Kind.DISTRICT) }
-                        ?.name
-
-                    val house = response.collection.children.firstOrNull()?.obj
-                        ?.metadataContainer
-                        ?.getItem(ToponymObjectMetadata::class.java)
-                        ?.address
-                        ?.components
-                        ?.firstOrNull { it.kinds.contains(Address.Component.Kind.HOUSE) }
-                        ?.name
-
-                    if (street != null) {
-                        array.add("$city $street")
-                    }
-                    if (house != null) {
-                        array.add("$street $house")
-                    }
-                    if (district != null) {
-                        array.add(district)
+                    if (all != null) {
+                        array.add(all)
                     }
 
                     adapterPlace.notifyDataSetChanged()
@@ -338,35 +304,14 @@ class MainActivity : AppCompatActivity(), GeoObjectTapListener, InputListener {
                         }
 
                         override fun onSearchResponse(response: Response) {
-                            val city = response.collection.children.firstOrNull()?.obj
+                            val all = response.collection.children.firstOrNull()?.obj
                                 ?.metadataContainer
                                 ?.getItem(ToponymObjectMetadata::class.java)
                                 ?.address
-                                ?.components
-                                ?.firstOrNull { it.kinds.contains(Address.Component.Kind.LOCALITY) }
-                                ?.name
+                                ?.formattedAddress
 
-                            val street = response.collection.children.firstOrNull()?.obj
-                                ?.metadataContainer
-                                ?.getItem(ToponymObjectMetadata::class.java)
-                                ?.address
-                                ?.components
-                                ?.firstOrNull { it.kinds.contains(Address.Component.Kind.STREET) }
-                                ?.name
-
-                            val district = response.collection.children.firstOrNull()?.obj
-                                ?.metadataContainer
-                                ?.getItem(ToponymObjectMetadata::class.java)
-                                ?.address
-                                ?.components
-                                ?.firstOrNull { it.kinds.contains(Address.Component.Kind.DISTRICT) }
-                                ?.name
-
-                            if (street != null) {
-                                binding.etNamePlace.hint = "$city $street"
-                            }
-                            if (district != null) {
-                                binding.etNamePlace.hint = district
+                            if (all != null) {
+                                binding.etNamePlace.hint = all
                             }
                         }
                     })

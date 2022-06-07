@@ -40,11 +40,11 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvNames"
-        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="200dp"
-        tools:listitem="@layout/item_rv"
         android:layout_marginHorizontal="20dp"
-        app:layout_constraintTop_toBottomOf="@+id/etNamePlace" />
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@+id/etNamePlace"
+        tools:listitem="@layout/item_rv" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
