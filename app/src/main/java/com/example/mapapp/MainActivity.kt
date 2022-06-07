@@ -34,6 +34,7 @@ import com.yandex.mapkit.map.Map
 import com.yandex.mapkit.search.*
 import java.util.*
 import com.yandex.runtime.Error
+import kotlinx.coroutines.*
 
 class MainActivity : AppCompatActivity(), GeoObjectTapListener, InputListener {
 
@@ -100,7 +101,8 @@ class MainActivity : AppCompatActivity(), GeoObjectTapListener, InputListener {
     //Edit text with textWatcher
     private fun etPlace() {
         binding.etNamePlace.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
+            override fun afterTextChanged(editable: Editable?) {
+                array.clear()
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -108,13 +110,17 @@ class MainActivity : AppCompatActivity(), GeoObjectTapListener, InputListener {
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 array.clear()
-                if (binding.etNamePlace.text.isNotEmpty()) {
-                    requestSearch(binding.etNamePlace.text.toString())
-                    binding.rvNames.isGone = false
-                } else {
+                if (s.isNullOrEmpty()) {
+                    binding.etNamePlace.hint = "Введите название улицы/дома/района"
                     binding.rvNames.isGone = true
-                    binding.etNamePlace.hint = "Введите название города/страны/места"
+                } else {
+                    Log.e("TAG", s.toString())
+                    requestSearch(s.toString())
+                    binding.rvNames.isGone = false
                 }
+                searchManager = SearchFactory.getInstance().createSearchManager(
+                    SearchManagerType.ONLINE
+                )
             }
         })
     }
@@ -227,15 +233,10 @@ class MainActivity : AppCompatActivity(), GeoObjectTapListener, InputListener {
                 binding.etNamePlace.text = null
                 binding.etNamePlace.hint = geoObjectTapEvent.geoObject.name
             }
-            geoObjectTapEvent.geoObject.descriptionText?.isNotBlank() == true -> {
-                binding.etNamePlace.text = null
-                binding.etNamePlace.hint = geoObjectTapEvent.geoObject.descriptionText
-            }
             else -> {
                 binding.etNamePlace.text = null
-                binding.etNamePlace.hint = "Введите название города/страны/места"
+                binding.etNamePlace.hint = "Введите название улицы/дома/района"
             }
-
         }
         return true
     }
@@ -247,15 +248,16 @@ class MainActivity : AppCompatActivity(), GeoObjectTapListener, InputListener {
         )
         //Your point
         val point = Geometry.fromPoint(Point(42.87, 74.59))
+
         searchSession = searchManager!!.submit(query, point, SearchOptions(),
             object : Session.SearchListener {
                 override fun onSearchError(error: Error) {
-                    Log.e("TAG", "Error")
+                    Toast.makeText(this@MainActivity, "Try again", Toast.LENGTH_SHORT)
+                        .show()
                 }
 
                 @SuppressLint("NotifyDataSetChanged")
                 override fun onSearchResponse(response: Response) {
-                    Log.e("TAG", query)
                     val city = response.collection.children.firstOrNull()?.obj
                         ?.metadataContainer
                         ?.getItem(ToponymObjectMetadata::class.java)
